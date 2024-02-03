@@ -60,35 +60,34 @@ namespace Paradox
 			public static RouteData GetRouteDataRandom()
 			{
 				RouteData routeData = UnityEngine.Object.Instantiate<RouteData>(ResourceManager.LoadAsset<RouteData>("Meta/RouteData_Hunter"));
-				Array values = Enum.GetValues(typeof(PlayerController.PlayableCharacters));
-				List<RouteData.StageItem> list = new List<RouteData.StageItem>();
-				List<RouteData.StageItem> list2 = new List<RouteData.StageItem>();
-				foreach (object obj in values)
+				Array ids = Enum.GetValues(typeof(PlayerController.PlayableCharacters));
+				List<RouteData.StageItem> horizontals = new List<RouteData.StageItem>();
+				List<RouteData.StageItem> verticals = new List<RouteData.StageItem>();
+				foreach (PlayerController.PlayableCharacters id in ids)
 				{
-					PlayerController.PlayableCharacters playableCharacters = (PlayerController.PlayableCharacters)obj;
 					for (int i = 0; i < 4; i++)
 					{
-						RouteData.StageItem stageItem = UnityEngine.Object.Instantiate<RouteData>(GetRouteDataStatic(playableCharacters)).Stages[i];
-						if (stageItem.Area.IsHorizontal && playableCharacters != PlayerController.PlayableCharacters.ROBOT)
+						RouteData.StageItem stageItem = UnityEngine.Object.Instantiate<RouteData>(GetRouteDataStatic(id)).Stages[i];
+						if (stageItem.Area.IsHorizontal && id != PlayerController.PlayableCharacters.ROBOT)
 						{
-							list.Add(stageItem);
+							horizontals.Add(stageItem);
 						}
 						else
 						{
-							list2.Add(stageItem);
+							verticals.Add(stageItem);
 						}
 					}
 				}
-				list2.RandomizeOrder<RouteData.StageItem>();
+				verticals.RandomizeOrder<RouteData.StageItem>();
 				for (int j = 0; j < 4; j++)
 				{
 					if (j == 2 && UnityEngine.Random.Range(0, 7) < 4)
 					{
-						routeData.Stages[j] = list.RandomPick<RouteData.StageItem>();
+						routeData.Stages[j] = horizontals.RandomPick<RouteData.StageItem>();
 					}
 					else
 					{
-						routeData.Stages[j] = Combine(routeData.Stages[j], list2[j]);
+						routeData.Stages[j] = Combine(routeData.Stages[j], verticals[j]);
 					}
 				}
 				routeData.Stages[0] = routeData.Stages[0];
@@ -97,31 +96,31 @@ namespace Paradox
 
 			public static RouteData.StageItem Combine(RouteData.StageItem bkg, RouteData.StageItem elv)
 			{
-				RouteData.StageItem stageItem = new RouteData.StageItem();
-				stageItem.Level = UnityEngine.Object.Instantiate<LevelData>(elv.Level);
-				for (int i = 0; i < stageItem.Level.Phases.Length; i++)
+				RouteData.StageItem stage = new RouteData.StageItem();
+				stage.Level = UnityEngine.Object.Instantiate<LevelData>(elv.Level);
+				for (int i = 0; i < stage.Level.Phases.Length; i++)
 				{
-					stageItem.Level.Phases[i].BossPool = bkg.Area.AvailableBossPool.ToArray();
+					stage.Level.Phases[i].BossPool = bkg.Area.AvailableBossPool.ToArray();
 				}
-				string name = bkg.Area.Name;
-				if (name == "Black Powder Mine" && (elv.Area.IsHorizontal || elv.Level.name.Contains("Flying_Robot")))
+				string area = bkg.Area.Name;
+				if (area == "Black Powder Mine" && (elv.Area.IsHorizontal || elv.Level.name.Contains("Flying_Robot")))
 				{
-					stageItem.Area = ResourceManager.LoadAsset<AreaData>("Meta/AreaData_03_Mines_Horizontal");
+					stage.Area = ResourceManager.LoadAsset<AreaData>("Meta/AreaData_03_Mines_Horizontal");
 				}
 				else
 				{
-					stageItem.Area = bkg.Area;
+					stage.Area = bkg.Area;
 				}
 				if (elv.Level.name.Contains("Flying"))
 				{
-					string str = (name == "Forge" || name == "Hollow") ? "01_Forge_Flying" : "04_Gungeon_Flying";
-					stageItem.BalanceData = ResourceManager.LoadAsset<BalanceData>("Meta/BalanceData_" + str);
+					string str = (area == "Forge" || area == "Hollow") ? "01_Forge_Flying" : "04_Gungeon_Flying";
+					stage.BalanceData = ResourceManager.LoadAsset<BalanceData>("Meta/BalanceData_" + str);
 				}
 				else
 				{
-					stageItem.BalanceData = bkg.BalanceData;
+					stage.BalanceData = bkg.BalanceData;
 				}
-				return stageItem;
+				return stage;
 			}
 		}
 
