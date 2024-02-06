@@ -43,6 +43,16 @@ namespace Paradox
             }
         }
 
+        [HarmonyPatch(typeof(NPCRoute_Selector), nameof(NPCRoute_Selector.AnyOtherRouteUnlocked))]
+        static class PatchAORU
+        {
+            public static bool Prefix(ref bool __result)
+            {
+                __result = true;
+                return false;
+            }
+        }
+
         [HarmonyPatch(typeof(SaveData), nameof(SaveData.SetLastRouteForCharacter))]
         static class PatchSLRFC
         {
